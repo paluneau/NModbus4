@@ -37,6 +37,7 @@ namespace Modbus.IO
                 case Modbus.WriteSingleCoil:
                 case Modbus.WriteSingleRegister:
                 case Modbus.Diagnostics:
+                case Modbus.ReportSlaveId:
                     numBytes = 1;
                     break;
                 case Modbus.WriteMultipleCoils:
@@ -69,6 +70,7 @@ namespace Modbus.IO
                 case Modbus.ReadInputs:
                 case Modbus.ReadHoldingRegisters:
                 case Modbus.ReadInputRegisters:
+                case Modbus.ReportSlaveId:
                     numBytes = frameStart[2] + 1;
                     break;
                 case Modbus.WriteSingleCoil:
@@ -111,8 +113,9 @@ namespace Modbus.IO
             return messageBody.ToArray();
         }
 
+      
         internal override bool ChecksumsMatch(IModbusMessage message, byte[] messageFrame)
-        {
+        {        
             return BitConverter.ToUInt16(messageFrame, messageFrame.Length - 2) ==
                    BitConverter.ToUInt16(ModbusUtility.CalculateCrc(message.MessageFrame), 0);
         }

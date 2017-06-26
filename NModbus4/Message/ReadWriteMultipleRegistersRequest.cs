@@ -31,7 +31,7 @@ namespace Modbus.Message
         /// <param name="writeData"></param>
         public ReadWriteMultipleRegistersRequest(byte slaveAddress, ushort startReadAddress, ushort numberOfPointsToRead,
             ushort startWriteAddress, RegisterCollection writeData)
-            : base(slaveAddress, Modbus.ReadWriteMultipleRegisters)
+            : base(slaveAddress, Modbus.ReportSlaveId)
         {
             _readRequest = new ReadHoldingInputRegistersRequest(Modbus.ReadHoldingRegisters, slaveAddress,
                 startReadAddress, numberOfPointsToRead);

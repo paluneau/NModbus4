@@ -25,7 +25,7 @@ namespace Modbus.Data
         ///     Initializes a new instance of the <see cref="RegisterCollection" /> class.
         /// </summary>
         public RegisterCollection(byte[] bytes)
-            : this((IList<ushort>) ModbusUtility.NetworkBytesToHostUInt16(bytes))
+            : this((IList<ushort>)ModbusUtility.NetworkBytesToHostUInt16(bytes))
         {
         }
 
@@ -33,7 +33,7 @@ namespace Modbus.Data
         ///     Initializes a new instance of the <see cref="RegisterCollection" /> class.
         /// </summary>
         public RegisterCollection(params ushort[] registers)
-            : this((IList<ushort>) registers)
+            : this((IList<ushort>)registers)
         {
         }
 
@@ -69,7 +69,7 @@ namespace Modbus.Data
         /// </summary>
         public byte ByteCount
         {
-            get { return (byte) (Count*2); }
+            get { return (byte)(Count * 2); }
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Modbus.Data
         /// </summary>
         /// <returns>
         ///     A <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
-        /// </returns>
+        /// </returns> 
         public override string ToString()
         {
             return String.Concat("{", String.Join(", ", this.Select(v => v.ToString()).ToArray()), "}");

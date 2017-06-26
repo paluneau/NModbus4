@@ -36,6 +36,17 @@ namespace Modbus.Device
         }
 
         /// <summary>
+        ///    Obtain specific data about the controller
+        /// </summary>
+        /// <param name="slaveAddress">Address of device to read values from.</param>
+        /// <returns>Device-specific data</returns>
+        public byte[] ReportSlaveId(byte slaveAddress)
+        {
+            var request = new ReportSlaveIdRequest(Modbus.ReportSlaveId, slaveAddress);
+            return PerformReportSlaveId(request);
+        }
+
+        /// <summary>
         ///    Asynchronously reads from 1 to 2000 contiguous coils status.
         /// </summary>
         /// <param name="slaveAddress">Address of device to read values from.</param>
@@ -361,6 +372,12 @@ namespace Modbus.Device
             ReadCoilsInputsResponse response = Transport.UnicastMessage<ReadCoilsInputsResponse>(request);
 
             return response.Data.Take(request.NumberOfPoints).ToArray();
+        }
+
+        private byte[] PerformReportSlaveId(ReportSlaveIdRequest request)
+        {
+            ReportSlaveIdResponse response = Transport.UnicastMessage<ReportSlaveIdResponse>(request);
+            return response.Data.Take(response.Data.Count).ToArray();
         }
 
         private Task<bool[]> PerformReadDiscretesAsync(ReadCoilsInputsRequest request)

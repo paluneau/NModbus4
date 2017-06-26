@@ -6,6 +6,7 @@ using System.Threading;
 using Modbus.Data;
 using Modbus.Device;
 using Modbus.Utility;
+using Modbus.Serial;
 
 namespace MySample
 {
@@ -16,15 +17,13 @@ namespace MySample
     {
         private static void Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure();
-
             try
             {
                 //ModbusTcpMasterReadInputs();
                 //SimplePerfTest();
                 //ModbusSerialRtuMasterWriteRegisters();
                 //ModbusSerialAsciiMasterReadRegisters();
-                //ModbusTcpMasterReadInputs();				
+                //ModbusTcpMasterReadInputs();
                 //StartModbusAsciiSlave();
                 //ModbusTcpMasterReadInputsFromModbusSlave();
                 //ModbusSerialAsciiMasterReadRegistersFromModbusSlave();
@@ -54,8 +53,9 @@ namespace MySample
                 port.StopBits = StopBits.One;
                 port.Open();
 
+                var adapter = new SerialPortAdapter(port);
                 // create modbus master
-                IModbusSerialMaster master = ModbusSerialMaster.CreateRtu(port);
+                IModbusSerialMaster master = ModbusSerialMaster.CreateRtu(adapter);
 
                 byte slaveId = 1;
                 ushort startAddress = 100;
@@ -80,8 +80,9 @@ namespace MySample
                 port.StopBits = StopBits.One;
                 port.Open();
 
+                var adapter = new SerialPortAdapter(port);
                 // create modbus master
-                IModbusSerialMaster master = ModbusSerialMaster.CreateAscii(port);
+                IModbusSerialMaster master = ModbusSerialMaster.CreateAscii(adapter);
 
                 byte slaveId = 1;
                 ushort startAddress = 1;
@@ -91,7 +92,9 @@ namespace MySample
                 ushort[] registers = master.ReadHoldingRegisters(slaveId, startAddress, numRegisters);
 
                 for (int i = 0; i < numRegisters; i++)
-                    Console.WriteLine("Register {0}={1}", startAddress + i, registers[i]);
+                {
+                    Console.WriteLine($"Register {startAddress + i}={registers[i]}");
+                }
             }
 
             // output: 
@@ -117,7 +120,9 @@ namespace MySample
                 bool[] inputs = master.ReadInputs(startAddress, numInputs);
 
                 for (int i = 0; i < numInputs; i++)
-                    Console.WriteLine("Input {0}={1}", startAddress + i, inputs[i] ? 1 : 0);
+                {
+                    Console.WriteLine($"Input {(startAddress + i)}={(inputs[i] ? 1 : 0)}");
+                }
             }
 
             // output: 
@@ -163,11 +168,12 @@ namespace MySample
 
                 byte unitId = 1;
 
+                var adapter = new SerialPortAdapter(slavePort);
                 // create modbus slave
-                ModbusSlave slave = ModbusSerialSlave.CreateAscii(unitId, slavePort);
+                ModbusSlave slave = ModbusSerialSlave.CreateAscii(unitId, adapter);
                 slave.DataStore = DataStoreFactory.CreateDefaultDataStore();
 
-                slave.Listen();
+                slave.ListenAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -187,11 +193,12 @@ namespace MySample
 
                 byte unitId = 1;
 
+                var adapter = new SerialPortAdapter(slavePort);
                 // create modbus slave
-                ModbusSlave slave = ModbusSerialSlave.CreateRtu(unitId, slavePort);
+                ModbusSlave slave = ModbusSerialSlave.CreateRtu(unitId, adapter);
                 slave.DataStore = DataStoreFactory.CreateDefaultDataStore();
 
-                slave.Listen();
+                slave.ListenAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -227,7 +234,7 @@ namespace MySample
             ModbusSlave slave = ModbusTcpSlave.CreateTcp(slaveId, slaveTcpListener);
             slave.DataStore = DataStoreFactory.CreateDefaultDataStore();
 
-            slave.Listen();
+            slave.ListenAsync().GetAwaiter().GetResult();
 
             // prevent the main thread from exiting
             Thread.Sleep(Timeout.Infinite);
@@ -243,7 +250,7 @@ namespace MySample
                 ModbusUdpSlave slave = ModbusUdpSlave.CreateUdp(client);
                 slave.DataStore = DataStoreFactory.CreateDefaultDataStore();
 
-                slave.Listen();
+                slave.ListenAsync().GetAwaiter().GetResult();
 
                 // prevent the main thread from exiting
                 Thread.Sleep(Timeout.Infinite);
@@ -263,8 +270,7 @@ namespace MySample
             TcpListener slaveTcpListener = new TcpListener(address, port);
             slaveTcpListener.Start();
             ModbusSlave slave = ModbusTcpSlave.CreateTcp(slaveId, slaveTcpListener);
-            Thread slaveThread = new Thread(slave.Listen);
-            slaveThread.Start();
+            var listenTask = slave.ListenAsync();
 
             // create the master
             TcpClient masterTcpClient = new TcpClient(address.ToString(), port);
@@ -277,7 +283,9 @@ namespace MySample
             ushort[] inputs = master.ReadInputRegisters(startAddress, numInputs);
 
             for (int i = 0; i < numInputs; i++)
-                Console.WriteLine("Register {0}={1}", startAddress + i, inputs[i]);
+            {
+                Console.WriteLine($"Register {(startAddress + i)}={(inputs[i])}");
+            }
 
             // clean up
             masterTcpClient.Close();
@@ -307,14 +315,15 @@ namespace MySample
                 masterPort.Open();
                 slavePort.Open();
 
+                var slaveAdapter = new SerialPortAdapter(slavePort);
                 // create modbus slave on seperate thread
                 byte slaveId = 1;
-                ModbusSlave slave = ModbusSerialSlave.CreateAscii(slaveId, slavePort);
-                Thread slaveThread = new Thread(new ThreadStart(slave.Listen));
-                slaveThread.Start();
+                ModbusSlave slave = ModbusSerialSlave.CreateAscii(slaveId, slaveAdapter);
+                var listenTask = slave.ListenAsync();
 
+                var masterAdapter = new SerialPortAdapter(masterPort);
                 // create modbus master
-                ModbusSerialMaster master = ModbusSerialMaster.CreateAscii(masterPort);
+                ModbusSerialMaster master = ModbusSerialMaster.CreateAscii(masterAdapter);
 
                 master.Transport.Retries = 5;
                 ushort startAddress = 100;
@@ -324,7 +333,9 @@ namespace MySample
                 ushort[] registers = master.ReadHoldingRegisters(slaveId, startAddress, numRegisters);
 
                 for (int i = 0; i < numRegisters; i++)
-                    Console.WriteLine("Register {0}={1}", startAddress + i, registers[i]);
+                {
+                    Console.WriteLine($"Register {(startAddress + i)}={registers[i]}");
+                }
             }
 
             // output
@@ -349,8 +360,9 @@ namespace MySample
                 port.StopBits = StopBits.One;
                 port.Open();
 
+                var adapter = new SerialPortAdapter(port);
                 // create modbus master
-                ModbusSerialMaster master = ModbusSerialMaster.CreateRtu(port);
+                ModbusSerialMaster master = ModbusSerialMaster.CreateRtu(adapter);
 
                 byte slaveId = 1;
                 ushort startAddress = 1008;

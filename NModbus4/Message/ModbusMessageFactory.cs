@@ -20,7 +20,6 @@ namespace Modbus.Message
         {
             IModbusMessage message = new T();
             message.Initialize(frame);
-
             return (T) message;
         }
 
@@ -63,15 +62,14 @@ namespace Modbus.Message
                 case Modbus.WriteMultipleRegisters:
                     request = CreateModbusMessage<WriteMultipleRegistersRequest>(frame);
                     break;
-                case Modbus.ReadWriteMultipleRegisters:
-                    request = CreateModbusMessage<ReadWriteMultipleRegistersRequest>(frame);
+                case Modbus.ReportSlaveId:
+                    request = CreateModbusMessage<ReportSlaveIdRequest>(frame);
                     break;
                 default:
                     throw new ArgumentException(
                         String.Format(CultureInfo.InvariantCulture, "Unsupported function code {0}", functionCode),
                         "frame");
             }
-
             return request;
         }
     }

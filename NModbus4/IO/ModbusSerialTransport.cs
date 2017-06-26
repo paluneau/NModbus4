@@ -47,7 +47,7 @@ namespace Modbus.IO
         internal override IModbusMessage CreateResponse<T>(byte[] frame)
         {
             IModbusMessage response = base.CreateResponse<T>(frame);
-
+            
             // compare checksum
             if (CheckFrame && !ChecksumsMatch(response, frame))
             {

@@ -157,7 +157,7 @@ namespace Modbus.Device
                             DataStore.HoldingRegisters);
                         WriteComplete.Raise(this, eventArgs);
                         break;
-                    case Modbus.ReadWriteMultipleRegisters:
+                    case Modbus.ReportSlaveId:
                         ReadWriteMultipleRegistersRequest readWriteRequest = (ReadWriteMultipleRegistersRequest)request;
                         WriteMultipleRegisters(readWriteRequest.WriteRequest, DataStore, DataStore.HoldingRegisters);
                         WriteComplete.Raise(this, eventArgs);

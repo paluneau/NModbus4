@@ -43,6 +43,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\ByteCollection.cs" />
+    <Compile Include="Message\ReportSlaveIdResponse.cs" />
+    <Compile Include="Message\ReportSlaveIdRequest.cs" />
     <Compile Include="Data\DataStore.cs" />
     <Compile Include="Data\DataStoreFactory.cs" />
     <Compile Include="Data\DiscreteCollection.cs" />
