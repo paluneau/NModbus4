@@ -16,6 +16,11 @@ NModbus4 differs from original NModbus in following:
 4. assembly renamed to NModbus4.dll
 5. target framework changed to .NET 4
 
+Latest feature
+=======
+
+Supports Modbus function 17 for Serial RTU: Report Slave ID. This request returns device-specific data and a Run Indicator from a slave.
+
 Install
 =======
 
